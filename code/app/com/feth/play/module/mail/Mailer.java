@@ -1,5 +1,6 @@
 package com.feth.play.module.mail;
 
+import java.lang.String;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -143,6 +144,7 @@ public class Mailer {
 		private final String subject;
 		private final String[] recipients;
 		private String from;
+		private String replyTo;
 		private final Body body;
 		private final Map<String, List<String>> customHeaders;
 
@@ -190,8 +192,16 @@ public class Mailer {
 			return from;
 		}
 
-		private void setFrom(final String from) {
+		public void setFrom(final String from) {
 			this.from = from;
+		}
+
+		public String getReplyTo() {
+			return replyTo;
+		}
+
+		public void setReplyTo(String replyTo) {
+			this.replyTo = replyTo;
 		}
 
 		public Body getBody() {
@@ -221,7 +231,17 @@ public class Mailer {
 
 			api.setSubject(mail.getSubject());
 			api.addRecipient(mail.getRecipients());
-			api.addFrom(mail.getFrom());
+
+			if( mail.getFrom() == null ){
+				api.addFrom(sender);
+			}else{
+				api.addFrom(mail.getFrom());
+			}
+
+			if( mail.getReplyTo() != null ){
+				api.setReplyTo(mail.getReplyTo());
+			}
+
 			api.addHeader("X-Mailer", MAILER + getVersion());
 
 			for (final Entry<String, List<String>> entry : mail
@@ -248,7 +268,6 @@ public class Mailer {
 	}
 
 	public Cancellable sendMail(final Mail email) {
-		email.setFrom(sender);
 		return Akka
 				.system()
 				.scheduler()
